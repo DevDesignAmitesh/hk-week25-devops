@@ -13,11 +13,13 @@ interface Todo {
 const page = () => {
   const [message, setMessage] = useState<string>("");
   const [description, setDescription] = useState<string>("");
+  const [ws, setWs] = useState<WebSocket | null>(null);
   const httpUrl = "http://localhost:5000";
   const [todos, setTodos] = useState<Todo[]>([]);
 
   useEffect(() => {
-    const ws = new WebSocket("ws://localhost:8080");
+    const ws = new WebSocket("ws://localhost:8008");
+    setWs(ws);
 
     ws.onmessage = (e) => {
       const parsedData = JSON.parse(e.data);
@@ -37,16 +39,27 @@ const page = () => {
   }, []);
 
   const addTodo = async () => {
+    if (!ws) {
+      return;
+    }
     const res = await axios.post(`${httpUrl}/todo`, {
       message,
       description,
     });
 
     console.log(res);
+
+    ws.send(
+      JSON.stringify({
+        type: "todo",
+        message,
+        description,
+      })
+    );
   };
 
   return (
-    <div>
+    <div className="h-screen bg-black text-white flex justify-center items-center flex-col">
       <input
         type="text"
         placeholder="enter todo message"
@@ -64,7 +77,7 @@ const page = () => {
       <br />
       <p>all my todos</p>
       {todos.map((todo) => (
-        <div>
+        <div key={todo.id}>
           <p>todoId: {todo.id}</p>
           <p>todo message: {todo.message}</p>
           <p>todo description: {todo.description}</p>
