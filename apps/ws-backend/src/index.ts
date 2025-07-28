@@ -10,12 +10,14 @@ server.on("connection", (ws: WebSocket) => {
 
     const { message, description, type } = parsedData;
     if (type === "todo") {
-      ws.send(
-        JSON.stringify({
-          message,
-          description,
-          type,
-        })
+      server.clients.forEach((ws) =>
+        ws.send(
+          JSON.stringify({
+            message,
+            description,
+            type,
+          })
+        )
       );
     }
   });

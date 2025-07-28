@@ -23,13 +23,13 @@ const page = () => {
 
     ws.onmessage = (e) => {
       const parsedData = JSON.parse(e.data);
-      const { type, message, description } = parsedData;
+      const { type, message, description, id } = parsedData;
 
       if (type === "todo") {
         setTodos((prev) => [
           ...prev,
           {
-            id: uuid(),
+            id,
             message,
             description,
           },
@@ -42,18 +42,17 @@ const page = () => {
     if (!ws) {
       return;
     }
-    const res = await axios.post(`${httpUrl}/todo`, {
+    const res: any = await axios.post(`${httpUrl}/todo`, {
       message,
       description,
     });
 
-    console.log(res);
-
     ws.send(
       JSON.stringify({
         type: "todo",
-        message,
-        description,
+        id: res.data.todo.id,
+        message: res.data.todo.message,
+        description: res.data.todo.description,
       })
     );
   };
